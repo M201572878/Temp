@@ -36,7 +36,7 @@ socketToServer = None
 while(True):
     socketToClient, addr = socketListenClient.accept()  # 阻塞状态，被动等待客户端的连接
     try:
-       _thread.start_new_thread( print_time, (socketToClient) )
+       _thread.start_new_thread( print_time, (socketToClient, ) )
     except:
        print ("Error: 无法启动线程")
 
