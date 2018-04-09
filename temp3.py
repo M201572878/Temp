@@ -23,8 +23,8 @@ Date ''' + dataStr.encode() + b'''
 Content-Length: ''' + str(len(buf)).encode() + b'''
 
 ''' + buf;
-        print(head.decode())
-        socketSend.send(buf)
+            print(head.decode())
+        socketSend.send(head + buf)
         buf = socketRecv.recv(10240)
     socketSend.close()
 
