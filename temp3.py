@@ -11,8 +11,10 @@ def print_time(name, socketRecv, socketSend):
             buf = b'''HTTP/1.1 200 OK
             Proxy-Connection: Keep-Alive
             Connection: keep-alive
+            Server: BaseHTTP/0.3 Python/2.7.10
             Content-Length: ''' + str(len(buf)).encode() + b'''
             ''' + buf;
+            print(buf)
         socketSend.send(buf)
         buf = socketRecv.recv(10240)
     socketSend.close()
