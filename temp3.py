@@ -10,6 +10,8 @@ def print_time(name, socketRecv, socketSend):
         if name == "listenServer":
             buf = b'''HTTP/1.1 200 OK
             Proxy-Connection: Keep-Alive
+            Connection: keep-alive
+            Content-Length: ''' + str(len(buf)).encode() + b'''
             ''' + buf;
         socketSend.send(buf)
         buf = socketRecv.recv(10240)
