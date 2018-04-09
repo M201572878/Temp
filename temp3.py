@@ -1,5 +1,8 @@
 import _thread
 import socket
+from wsgiref.handlers import format_date_time
+from datetime import datetime
+from time import mktime
 
 # 为线程定义一个函数
 def print_time(name, socketRecv, socketSend):
@@ -8,13 +11,19 @@ def print_time(name, socketRecv, socketSend):
     while len(buf):
         print(name.encode() + b":" + buf)
         if name == "listenServer":
-            buf = b'''HTTP/1.1 200 OK
-            Proxy-Connection: Keep-Alive
-            Connection: keep-alive
-            Server: BaseHTTP/0.3 Python/2.7.10
-            Content-Length: ''' + str(len(buf)).encode() + b'''
-            ''' + buf;
-            print(buf)
+            now = datetime.now()
+            stamp = mktime(now.timetuple())
+            dataStr = format_date_time(stamp)
+
+            head = b'''HTTP/1.1 200 OK
+Proxy-Connection: Keep-Alive
+Connection: keep-alive
+Server: BaseHTTP/0.3 Python/2.7.10
+Date ''' + dataStr.encode() + b'''
+Content-Length: ''' + str(len(buf)).encode() + b'''
+
+''' + buf;
+        print(head.decode())
         socketSend.send(buf)
         buf = socketRecv.recv(10240)
     socketSend.close()
