@@ -4,7 +4,7 @@ import time
 
 import threading
 
-BUFSIZE = 1024
+BUFSIZE = 40960
 
 def get_dst_ip_port(buf):
     result = True
@@ -24,15 +24,19 @@ class Access_to_Host(object):
         self.conn = conn
         self.addr = addr
         all_src_data, hostname, port, ssl_flag = self.get_dst_host_from_header(self.conn, self.addr)
-        if (hostname != '119.29.188.55'):
+        if (hostname != '119.29.188.55' and hostname != '10.187.45.133' and hostname != 'www.internalrequests.org'):
             return
         all_dst_data = self.get_data_from_host(hostname, port, all_src_data, ssl_flag)
-        print(all_dst_data, ssl_flag)
+        # print(all_dst_data, ssl_flag)
         if all_dst_data and not ssl_flag:
             # self.send_data_to_client(self.conn,all_dst_data)
             self.ssl_client_server_client(self.conn, self.conn_dst, all_dst_data)
         elif ssl_flag:
-            sample_data_to_client = b"HTTP/1.0 200 Connection Established\r\n\r\n"
+
+            sample_data_to_client = all_dst_data
+            if hostname == '10.187.45.133':
+                sample_data_to_client = b"HTTP/1.0 200 Connection Established\r\n\r\n"
+            #sample_data_to_client = b"HTTP/1.0 200 Connection Established\r\n\r\n"
             # print("\nSSL_Flag-1")
             # self.send_data_to_client(self.conn,all_dst_data)
             # print("SSL_Flag-2")
@@ -59,6 +63,7 @@ class Access_to_Host(object):
             if ssl_client_data:
                 #####send data to server
                 try:
+                    print(b"from src: " + ssl_client_data)
                     self.dst_conn.sendall(ssl_client_data)
                 except Exception as e:
                     print("server disconnct Err")
@@ -84,6 +89,7 @@ class Access_to_Host(object):
             if ssl_server_data:
                 #####send data to client
                 try:
+                    print(b"from dst: " + ssl_server_data)
                     self.src_conn.sendall(ssl_server_data)
                 except Exception as e:
                     print("Client disconnct Err")
@@ -152,7 +158,7 @@ class Access_to_Host(object):
                     # hostname = hostname[indexssl + 8:]
                     # port = 443
                     result11, hostname, port = get_dst_ip_port(header)
-                    if (hostname == '119.29.188.55'):
+                    if (hostname == '119.29.188.55' or hostname == '10.187.45.133'):
                         print(header)
                     ssl_flag = True
                     return header, hostname, port, ssl_flag
@@ -186,7 +192,8 @@ class Access_to_Host(object):
         self.conn_dst = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         all_dst_data = ""
         try:
-            self.conn_dst.connect((str(host), port))
+            con_port = 3128 if host != '10.187.45.133' else port
+            self.conn_dst.connect((str('10.187.45.133'), con_port))
         except Exception as e:
             print(e)
             print("get_data_from_host: cannot get host:" + host)
@@ -195,7 +202,7 @@ class Access_to_Host(object):
         # con_string="("+server+","+port+")"
         ############https只建立链接
         try:
-            if ssl_flag:
+            if ssl_flag and host ==  '10.187.45.133':
                 return all_dst_data
             else:
                 print(sdata)

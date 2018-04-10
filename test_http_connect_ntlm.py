@@ -4,6 +4,8 @@ import getpass
 
 def get_dst_ip_port(buf):
     result = True
+    ip = None
+    port = 0
     try:
         str = buf.decode().split('\n')[0]
         http_info = str.split(' ')
@@ -17,18 +19,15 @@ def get_dst_ip_port(buf):
 
 # 为线程定义一个函数
 def print_time(name, socketRecv, socketSend, ip_port):
-    print(name)
+    # print(name)
     try:
         while True:
             buf = socketRecv.recv(10240)
-            if(len(buf)):
-                print(name.encode() + b":" + buf)
-            if( name == 'listenClient'):
-                buf = replace_buf(buf, ip_port)
-            socketSend.send(buf)
+            # if( name == 'listenClient'):
+            #     buf = replace_buf(buf, ip_port)
+            socketSend.sendall(buf)
     except:
         socketSend.close()
-        print('close')
 
 def replace_buf(buf, ip_port):
     str = buf.decode()
@@ -51,17 +50,22 @@ if __name__ == '__main__':
     while(True):
         socketToClient, addr = socketListenClient.accept()  # 阻塞状态，被动等待客户端的连接
         buf = socketToClient.recv(10240)
+        print(buf)
         result, dst_ip, dst_port = get_dst_ip_port(buf)
         if(result):
+            if(dst_ip != '119.29.188.55'):
+                continue
             con_ip = dst_ip if user == 'hyhyx' else proxy_ip
             con_port = dst_port if user == 'hyhyx' else proxy_port
             socketToServer = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            print('connect to: ', con_ip, con_port)
+            #print('connect to: ', con_ip, con_port)
             socketToServer.connect((con_ip, con_port))
             ip_port = con_ip + str(con_port)
-            buf = replace_buf(buf, ip_port)
+            #buf = replace_buf(buf, ip_port)
+            socketToServer.sendall(buf)
+            buf = socketToServer.recv(10240)
+            socketToClient.sendall(buf)
             print(buf)
-            socketToServer.send(buf)
             try:
                _thread.start_new_thread( print_time, ("listenServer", socketToServer, socketToClient, ip_port) )
                _thread.start_new_thread( print_time, ("listenClient", socketToClient, socketToServer, ip_port) )
